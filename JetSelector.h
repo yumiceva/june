@@ -16,7 +16,7 @@ class JetSelector
 {
 public:
   JetSelector() { }
-  JetSelector( TTree *tree, Long64_t entry, std::string OP);
+  JetSelector( TTree *tree, Long64_t entry, std::string OP, std::string btagger = "");
   //JetSelector(const char *name);
   //JetSelector( JetSelector& rhs);
   ~JetSelector();
@@ -31,7 +31,7 @@ public:
   //ClassDef(JetSelector,1);
 private:
   //TLorentzVector fp4;
-  //Double_t frelIso;
+  std::string fbtagger;
   std::vector< Jet > fList;
 
   TTreeReader     fReader;  //!the tree reader

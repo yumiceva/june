@@ -32,6 +32,7 @@ double ElectronSelector::eleEffArea03(double SCEta) {
   return area[region];
 }
 
+
 void ElectronSelector::runSelector(std::string OP)
 {
   bool IsVeto = false;
@@ -44,6 +45,8 @@ void ElectronSelector::runSelector(std::string OP)
       double pt = elePt[i];
       double eta = eleSCEta[i];
       double phi = elePhi[i];
+
+      bool passEtaEBEEGap = (fabs(eta) < 1.4442) || (fabs(eta) > 1.566);
 
       double rho_zero = std::max(0.0, (double) *rho );
       double relIsocorr = (elePFChIso[i] +
@@ -60,21 +63,37 @@ void ElectronSelector::runSelector(std::string OP)
 
       //bool mvabasedID = eleIDMVATrg[i] > 0;
 
-
+      float cutD0 = 0.05; //barrel
+      float cutDz = 0.1; // barrel
+      if ( fabs(eta) > 1.479 ) {
+        // endcap
+        cutD0 = 0.1;
+        cutDz = 0.2;
+      }
+ 
       IsVeto =
         pt > 15.0 &&
         fabs(eta) < 2.5 &&
-        cutbasedID_veto;
+        cutbasedID_veto &&
+        passEtaEBEEGap &&
+        eleD0[i] < cutD0 &&
+        eleDz[i] < cutDz;
 
       IsLoose =
         pt > 15.0 &&
         fabs(eta) < 2.5 &&
-        cutbasedID_loose;
+        cutbasedID_loose &&
+        passEtaEBEEGap &&
+        eleD0[i] < cutD0 &&
+        eleDz[i] < cutDz;
 
       IsTight =
         pt > 30 &&
         fabs(eta) < 2.4 &&
-        cutbasedID_tight;
+        passEtaEBEEGap &&
+        eleD0[i] < cutD0 &&
+        eleDz[i] < cutDz &&
+        cutbasedID_tight ;
 
       TLorentzVector p4;
       p4.SetPtEtaPhiE( pt, eta, phi, 0.);

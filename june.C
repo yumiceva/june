@@ -75,7 +75,10 @@ void june::SlaveBegin(TTree * /*tree*/)
                     "vetoLooseElectron",
                     "3jets",
                     "4jets",
-                    "1btag"
+                    "gt5jets",
+                    "1btag",
+                    "2btag",
+                    "gt3btag"
    };
 
    for ( vector<string>::iterator ii = counterlabels.begin(); ii != counterlabels.end(); ++ii) {
@@ -126,7 +129,7 @@ Bool_t june::Process(Long64_t entry)
    MuonSelector mu_loose_selector( fReader.GetTree(), entry, "loose");
    MuonSelector mu_tight_selector( fReader.GetTree(), entry, "tight");
    ElectronSelector ele_veto_selector( fReader.GetTree(), entry, "veto");
-   JetSelector jet_selector( fReader.GetTree(), entry, "tight");
+   JetSelector jet_selector( fReader.GetTree(), entry, "tight", "CSVv2M");
    
    //cout << "got mu loose selector" << endl;
    std::vector< Muon > Loose_muons = mu_loose_selector.getList();
@@ -159,13 +162,28 @@ Bool_t june::Process(Long64_t entry)
    counter["vetoLooseElectron"]++;
 
    if ( Tight_jets.size() < 3 ) return kTRUE;
-   counter["3jets"]++;
+
+   // Select 3 or more jets
+
+   if ( Tight_jets.size() == 3 ) counter["3jets"]++;
+
+   if ( Tight_jets.size() == 4 ) counter["4jets"]++;
+   
+   if ( Tight_jets.size() >= 5 ) counter["gt5jets"]++;
+
+   
 
    vector<Jet> myjets;
-   
+   int Nbjets = 0;
+
    for ( unsigned int ijet = 0; ijet < Tight_jets.size(); ++ijet) {
      myjets.push_back( Tight_jets[ijet] );
+     if ( Tight_jets[ijet].Isbtag() ) Nbjets++;
    }
+
+   if ( Nbjets == 1 ) counter["1btag"]++;
+   if ( Nbjets == 2 ) counter["2btag"]++;
+   if ( Nbjets >= 3 ) counter["gt3btag"]++;
 
    // Compute M3
    //sort( myjets.begin(), myjets.end() );

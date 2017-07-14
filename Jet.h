@@ -21,6 +21,7 @@ public:
   //void Merge(TCollection *list);
   void setP4( TLorentzVector &p4 ) { fp4 = p4; }
   void setIsbtag( bool tag ) { Isbtag = tag; }
+  bool Isbtag() { return Isbtag; }
   //void setrelIso( Double_t relIso ) { frelIso = relIso; }
   //Double_t relIso() { return frelIso; }
   TLorentzVector getP4() { return fp4; }
