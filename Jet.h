@@ -20,8 +20,8 @@ public:
   //void Fill(bool selected, double var);
   //void Merge(TCollection *list);
   void setP4( TLorentzVector &p4 ) { fp4 = p4; }
-  void setIsbtag( bool tag ) { Isbtag = tag; }
-  bool Isbtag() { return Isbtag; }
+  void setIsbtag( bool tag ) { fIsbtag = tag; }
+  bool Isbtag() { return fIsbtag; }
   //void setrelIso( Double_t relIso ) { frelIso = relIso; }
   //Double_t relIso() { return frelIso; }
   TLorentzVector getP4() { return fp4; }
@@ -30,7 +30,7 @@ public:
 
 private:
   TLorentzVector fp4;
-  bool Isbtag;
+  bool fIsbtag;
 
 };
 

@@ -12,8 +12,10 @@ JetSelector::JetSelector( TTree *tree, Long64_t entry, std::string OP, std::stri
 {
   fReader.SetTree(tree);
   fReader.SetEntry(entry);
-  runSelector(OP);
   fbtagger = btagger;
+  // now run it
+  runSelector(OP);
+
 }
 
 JetSelector::~JetSelector()
@@ -41,6 +43,7 @@ void JetSelector::runSelector(std::string OP)
       bool Isbtagged = false;
       if ( fbtagger.find("CSVv2") != std::string::npos && jetCSV2BJetTags[i] > cut_btag ) Isbtagged = true;
 
+      
       IsLoose =
         pt > 30.0 &&
         fabs(eta) < 2.4 &&
