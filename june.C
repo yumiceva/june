@@ -28,9 +28,17 @@
 #include "june.h"
 #include <TH2.h>
 #include <TStyle.h>
+#include "TLorentzVector.h"
 
 #include "Muon.h"
 #include "MuonSelector.h"
+#include "Electron.h"
+#include "ElectronSelector.h"
+#include "Jet.h"
+#include "JetSelector.h"
+
+bool operator<( const TLorentzVector& tlv1, const TLorentzVector& tlv2 ) { return tlv1.Pt() < tlv2.Pt(); }
+bool operator<( Jet& j1, Jet& j2 ) { TLorentzVector tlv1 = j1.getP4(); TLorentzVector tlv2 = j2.getP4(); return tlv1.Pt() < tlv2.Pt(); }
 
 void june::Begin(TTree * /*tree*/)
 {
@@ -39,6 +47,7 @@ void june::Begin(TTree * /*tree*/)
    // The tree argument is deprecated (on PROOF 0 is passed).
 
    TString option = GetOption();
+   cout << "================== BEGIN JOB" << endl;
    cout << "Run with options: " << option << endl;
 
 }
@@ -53,11 +62,28 @@ void june::SlaveBegin(TTree * /*tree*/)
 
    hpv = new TH1F("pv","pv",30,0,30);
    mu1Histos = new MuonHistos("mu1"); // leading muon
+   jet1Histos = new JetHistos("jet1");
+   jet2Histos = new JetHistos("jet2");
 
-   //fSkim = fChain->CloneTree(0);
-   //fChain->GetTree()->CopyAddresses(fSkim);
-   //fSkim->SetName("gg");
-   cout << "done slavebegin" << endl;
+
+   // Counters --------------------------------------------------------------------------
+   counterlabels = {"begin",
+                    "HLT",
+                    "PV",
+                    "TightMuon",
+                    "vetoLooseMuon",
+                    "vetoLooseElectron",
+                    "3jets",
+                    "4jets",
+                    "1btag"
+   };
+
+   for ( vector<string>::iterator ii = counterlabels.begin(); ii != counterlabels.end(); ++ii) {
+     counter[*ii] = 0.;
+   }
+   //-------------------
+
+   cout << "created histogram containers" << endl;
 }
 
 Bool_t june::Process(Long64_t entry)
@@ -77,49 +103,95 @@ Bool_t june::Process(Long64_t entry)
    // Use fStatus to set the return value of TTree::Process().
    //
    // The return value is currently not used.
-  /*
-  if (first) {
-    cout << "call first" <<endl;
-    fSkim = fChain->CloneTree(0);
-    cout << "cloned tree" << endl;
-    fChain->GetTree()->CopyAddresses(fSkim);
-    cout << "copied addresses" <<endl;
-    first = false;
-  }
-  */
 
 
    fReader.SetEntry(entry);
 
-   //if ( fMaxEvents == jentry ) {cout << "== Reached maximum number of events set to " << jentry << endl; break; }
-   if ( entry%1000 == 0 )
+   if ( entry%10000 == 0 )
      cout << "== Processing entry: " << entry << "  ==================="<<endl;
+   
+   counter["begin"]++;
 
+   // check HLT
+   if ( *HLTEleMuX >> 19 & 1 || *HLTEleMuX >> 20 & 1 ) counter["HLT"]++;
+   else return kTRUE;
 
+   // check for a good PV
+   if ( *isPVGood ) {
+     counter["PV"]++;
+   }
+   else return kTRUE;
+
+   // define selectors
    MuonSelector mu_loose_selector( fReader.GetTree(), entry, "loose");
    MuonSelector mu_tight_selector( fReader.GetTree(), entry, "tight");
-
+   ElectronSelector ele_veto_selector( fReader.GetTree(), entry, "veto");
+   JetSelector jet_selector( fReader.GetTree(), entry, "tight");
+   
    //cout << "got mu loose selector" << endl;
    std::vector< Muon > Loose_muons = mu_loose_selector.getList();
+   std::vector< Muon > Tight_muons = mu_tight_selector.getList();
+   std::vector< Electron > veto_electrons = ele_veto_selector.getList();
+   std::vector< Jet > Tight_jets = jet_selector.getList();
+
    //cout << "got loose muon list" << endl;
    //cout << "list size = " << Loose_muons.size() << endl;
 
-   Muon themuon;
-   if ( Loose_muons.size() != 0 ) themuon = Loose_muons[0];
+   Muon tightMuon;
+   Muon looseMuon;
+   Electron vetoElectron;
+
+   //cout << "loose size " << Loose_muons.size() << endl;
+   //cout << "tight size " << Tight_muons.size() << endl;
+
+   if ( Loose_muons.size() != 0 ) looseMuon = Loose_muons[0];
    else return kTRUE;
 
-   mu1Histos->Fill( themuon );
+   if ( Tight_muons.size() == 1 ) tightMuon = Tight_muons[0];
+   else return kTRUE;
 
-   //cout << "got leading muon" <<endl;
+   counter["TightMuon"]++;
+
+   if ( Loose_muons.size() > 1 ) return kTRUE;
+   counter["vetoLooseMuon"]++;
+
+   if ( veto_electrons.size() > 0 ) return kTRUE;
+   counter["vetoLooseElectron"]++;
+
+   if ( Tight_jets.size() < 3 ) return kTRUE;
+   counter["3jets"]++;
+
+   vector<Jet> myjets;
    
-   if ( *isPVGood ) {
-     hpv->Fill( *nVtx );
+   for ( unsigned int ijet = 0; ijet < Tight_jets.size(); ++ijet) {
+     myjets.push_back( Tight_jets[ijet] );
    }
-   cout << "done filling the histo" << endl;
+
+   // Compute M3
+   //sort( myjets.begin(), myjets.end() );
+   float M3 = -1;
+   float sumpt = -1;
+   int icomb = 0;
+   do {
+     //std::cout << myints[0] << ' ' << myints[1] << ' ' << myints[2] << '\n';
+     TLorentzVector tlv_M3 = myjets[0].getP4() + myjets[1].getP4() + myjets[2].getP4();
+     if ( tlv_M3.Pt() >= sumpt )
+       {
+         sumpt = tlv_M3.Pt();
+         M3 = tlv_M3.M();
+       }
+     icomb++;
+
+   } while ( next_permutation(myjets.begin(), myjets.end() ) );
+
    
-   //fSkim->Fill();
+   hpv->Fill ( *nVtx );
+   mu1Histos->Fill( tightMuon );
+   jet1Histos->Fill( myjets[0] );
+   jet2Histos->Fill( myjets[1] );
 
-
+   //cout << "done filling the histo" << endl;
+   
    return kTRUE;
 }
 
@@ -156,6 +228,15 @@ void june::Terminate()
       {
         it->second->Write();
       }
+
+  // Print cut flow --------------------------------------------------------------------
+  cout << "== Cut flow:\n";
+  //for ( map<string, float>::iterator it = counter.begin(); it != counter.end(); it++ )
+  for ( vector<string>::iterator ii= counterlabels.begin(); ii != counterlabels.end(); ++ii)
+    {
+      //cout << format("%-25s %12.4f\n") % *ii % counter[*ii];
+      cout << *ii << " " << counter[*ii] << endl;
+    }
 
   //fSkim->Write();
 

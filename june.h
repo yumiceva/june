@@ -9,7 +9,7 @@
 #define june_h
 
 #include "MuonHistos.h"
-
+#include "JetHistos.h"
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -21,7 +21,8 @@
 
 // Headers needed by this particular selector
 #include <vector>
-
+#include <map>
+#include <string>
 
 
 class june : public TSelector {
@@ -29,14 +30,14 @@ public :
 
   TH1F *hpv;
   MuonHistos *mu1Histos;
+  JetHistos  *jet1Histos;
+  JetHistos  *jet2Histos;
+  map< string, float > counter;
+  vector<string> counterlabels;
 
    TTreeReader     fReader;  //!the tree reader
    TTree          *fChain = 0;   //!pointer to the analyzed TTree or TChain
   
-  //TTree  *fSkim = 0;
-
-  bool first = true;
-
    // Readers to access the data (delete the ones you do not need).
    TTreeReaderValue<Int_t> run = {fReader, "run"};
    TTreeReaderValue<Long64_t> event = {fReader, "event"};
@@ -47,6 +48,7 @@ public :
    TTreeReaderValue<Bool_t> isPVGood = {fReader, "isPVGood"};
    TTreeReaderValue<Float_t> rho = {fReader, "rho"};
    TTreeReaderValue<ULong64_t> HLTEleMuX = {fReader, "HLTEleMuX"};
+   TTreeReaderValue<ULong64_t> HLTEleMuXIsPrescaled = {fReader, "HLTEleMuXIsPrescaled"};
    TTreeReaderArray<float> pdf = {fReader, "pdf"};
    TTreeReaderValue<Int_t> nPUInfo = {fReader, "nPUInfo"};
    TTreeReaderArray<int> nPU = {fReader, "nPU"};

@@ -28,7 +28,9 @@ Jet::Jet( Jet& rhs)
   
 }
 */
-
+Jet::Jet(): Isbtag(0)
+{
+}
 
 Jet::~Jet()
 {
