@@ -1,0 +1,22 @@
+# Name, Location, xsection
+ttbar_100k, /uscms_data/d2/dnoonan/13TeV_TTGamma/TTGamma_SingleLeptFromTbar_100k.root, 1
+TTbar, root://cmsxrootd.fnal.gov//store/user/yumiceva/ntuples_2016/TTbar.root, 1
+ST_t_bar, root://cmsxrootd.fnal.gov//store/user/yumiceva/ntuples_2016/ST_t_bar.root, 1
+ST_t_top, root://cmsxrootd.fnal.gov//store/user/yumiceva/ntuples_2016/ST_t_top.root, 1
+TTZ, root://cmsxrootd.fnal.gov//store/user/yumiceva/ntuples_2016/TTZ.root, 1
+DYjets, root://cmsxrootd.fnal.gov//store/user/yumiceva/ntuples_2016/ntuple_DYjets.root, 1
+ST_s, root://cmsxrootd.fnal.gov//store/user/troy2012/ntuples_2016/ST_s.root, 1
+W1jets, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/W1jets.root, 1
+W2jets, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/W2jets.root, 1
+W3jets, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/W3jets.root, 1
+W4jets, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/W4jets.root, 1
+EleD, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/job_SingleEle_Run2016D_FebReminiAOD.root, 1
+MuB, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/job_SingleMu_Run2016B_FebReminiAOD.root, 1
+MuC, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/job_SingleMu_Run2016C_FebReminiAOD.root, 1
+MuD, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/job_SingleMu_Run2016D_FebReminiAOD.root, 1
+MuE, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/job_SingleMu_Run2016E_FebReminiAOD.root, 1
+MuF1, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/job_SingleMu_Run2016F_FebReminiAOD1.root, 1
+MuF2, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/job_SingleMu_Run2016F_FebReminiAOD2.root, 1
+MuG, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/job_SingleMu_Run2016G_FebReminiAOD.root, 1
+MuH2, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/job_SingleMu_Run2016H_FebReminiAODv2.root, 1
+MuH3, root://cmsxrootd.fnal.gov//store/user/dnoonan/13TeV_ggNTuples/job_SingleMu_Run2016H_FebReminiAODv3.root, 1
