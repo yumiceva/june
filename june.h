@@ -10,6 +10,7 @@
 
 #include "MuonHistos.h"
 #include "JetHistos.h"
+#include "PUReweight.h"
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -29,11 +30,14 @@ class june : public TSelector {
 public :
 
   TH1F *hpv;
+  TH1F *hpvReweight;
   MuonHistos *mu1Histos;
   JetHistos  *jet1Histos;
   JetHistos  *jet2Histos;
   map< string, float > counter;
   vector<string> counterlabels;
+  map<string, float >  fweights;
+  PUReweight* PUweighter;
 
    TTreeReader     fReader;  //!the tree reader
    TTree          *fChain = 0;   //!pointer to the analyzed TTree or TChain

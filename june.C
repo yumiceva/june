@@ -60,11 +60,20 @@ void june::SlaveBegin(TTree * /*tree*/)
 
    TString option = GetOption();
 
-   hpv = new TH1F("pv","pv",30,0,30);
+   hpv = new TH1F("pv","Vertices",40,0,40);
+   hpvReweight = new TH1F("pvreweight","Vertices",40,0,40);
    mu1Histos = new MuonHistos("mu1"); // leading muon
    jet1Histos = new JetHistos("jet1");
    jet2Histos = new JetHistos("jet2");
 
+   /* TObjArray* list = fChain->GetListOfFiles();
+   TIterator* iter = list->MakeIterator();
+   TObject* obj = 0;
+   while ((obj = iter->Next())) {
+     TString fileName(obj->GetTitle());
+     cout << fileName << endl;
+   }
+   */
 
    // Counters --------------------------------------------------------------------------
    counterlabels = {"begin",
@@ -86,7 +95,22 @@ void june::SlaveBegin(TTree * /*tree*/)
    }
    //-------------------
 
-   cout << "created histogram containers" << endl;
+   TString pufilename = "purewight.root";
+   if ( option.Contains("PUinput:") )
+     {
+       pufilename = option( option.Index("PUinput:"), option.Index(":endPUinput") );
+       //pufilename.Remove(0,8);
+       pufilename.ReplaceAll("PUinput:","");
+       pufilename.ReplaceAll(":endPUinput","");
+
+     }
+   cout << "Pileup reweight MC input file: " << pufilename << endl;
+   vector<string> fileNames;
+   fileNames.push_back( pufilename.Data() );
+
+   PUweighter = new PUReweight(1, fileNames, "Data_2016BCDGH_Pileup.root");
+   
+   cout << "Histogram containers created" << endl;
 }
 
 Bool_t june::Process(Long64_t entry)
@@ -115,6 +139,14 @@ Bool_t june::Process(Long64_t entry)
    
    counter["begin"]++;
 
+   // reset weights
+   //for ( map<string, float>::iterator it = fweights.begin(); it != fweights.end(); it++ )
+   //for ( vector<float>::iterator ii = fweights.begin(); ii != fweights.end(); ++ii) {
+   //  fweights[*ii] = 1;
+   //}
+   // Check if data or MC
+   bool isMC = !( *isData );
+
    // check HLT
    if ( *HLTEleMuX >> 19 & 1 || *HLTEleMuX >> 20 & 1 ) counter["HLT"]++;
    else return kTRUE;
@@ -122,6 +154,24 @@ Bool_t june::Process(Long64_t entry)
    // check for a good PV
    if ( *isPVGood ) {
      counter["PV"]++;
+     // if MC get PU weight
+     if (isMC) {
+       //cout << "isMC " << isMC << endl;
+       vector<int> my_puBX;
+       for (int i = 0, n =  puBX.GetSize(); i < n; ++i)
+         {
+           my_puBX.push_back( puBX[i] );
+         }
+       
+       vector<float> my_puTrue;
+       for (int i = 0, n =  puTrue.GetSize(); i < n; ++i)
+         {
+           my_puTrue.push_back( puTrue[i] );
+         }
+       fweights["PU"] = PUweighter->getWeight( (*nPUInfo), &my_puBX, &my_puTrue );
+     }
+     else fweights["PU"] = 1;
+     //cout << " PU weight = " << fweights["PU"] << endl;
    }
    else return kTRUE;
 
@@ -199,8 +249,10 @@ Bool_t june::Process(Long64_t entry)
 
    } while ( next_permutation(myjets.begin(), myjets.end() ) );
 
+   float evtWeight = fweights["PU"];
    
    hpv->Fill ( *nVtx );
+   hpvReweight->Fill( *nVtx, evtWeight );
    mu1Histos->Fill( tightMuon );
    jet1Histos->Fill( myjets[0] );
    jet2Histos->Fill( myjets[1] );
@@ -236,13 +288,31 @@ void june::Terminate()
     }
   
   TFile *fFile = TFile::Open( filename, "RECREATE");
+  cout << "Output root file: " << filename << endl;
+
+  // Write histograms
+
   hpv->Write();
+  hpvReweight->Write();
 
   map< string, TH1F*> hmap = mu1Histos->GetMap();
   for ( std::map< std::string, TH1F*>::iterator it= hmap.begin(); it != hmap.end(); ++it)
       {
         it->second->Write();
       }
+
+  hmap = jet1Histos->GetMap();
+  for ( std::map< std::string, TH1F*>::iterator it= hmap.begin(); it != hmap.end(); ++it)
+    {
+      it->second->Write();
+    }
+  
+  hmap = jet2Histos->GetMap();
+  for ( std::map< std::string, TH1F*>::iterator it= hmap.begin(); it != hmap.end(); ++it)
+    {
+      it->second->Write();
+    }
+
 
   // Print cut flow --------------------------------------------------------------------
   cout << "== Cut flow:\n";
@@ -254,5 +324,5 @@ void june::Terminate()
     }
 
   //fSkim->Write();
-
+  cout << "================== END JOB" << endl;
 }
