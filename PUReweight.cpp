@@ -6,7 +6,7 @@ PUReweight::PUReweight(int nFiles, std::vector<string> fileNames, std::string PU
 
 	PUweightSum = 0.0;
 	events = 0;
-	TFile* pileupFile = new TFile(PUfilename.c_str(),"READ");
+	TFile* pileupFile = TFile::Open(PUfilename.c_str(),"READ");
 	PUweightHist = (TH1D*)pileupFile->Get("pileup");
 	PUweightHist->SetDirectory(0);
 	pileupFile->Close();
