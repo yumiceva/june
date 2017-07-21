@@ -1,8 +1,10 @@
-void run_june() {
+void run_june(string input = "", string output = "") {
 
+  // start stopwatch
   TStopwatch t; 
   t.Start(); 
 
+  // compile
   gROOT->LoadMacro("Muon.cc+");
   gROOT->LoadMacro("MuonSelector.cc+");
   gROOT->LoadMacro("MuonHistos.cc+");
@@ -15,13 +17,20 @@ void run_june() {
 
   gROOT->LoadMacro("PUReweight.cpp+");
 
-  //int nthreads = 4;
-  //ROOT::EnableImplicitMT(nthreads);
-  
+  // check arguments
+  if ( input == "" && output == "") {
+    input = "/uscms_data/d2/dnoonan/13TeV_TTGamma/TTGamma_SingleLeptFromTbar_100k.root";
+    output= "histos_ttbar_100k.root";
+  }
+
+  // define tree
   TChain* chain = new TChain("ggNtuplizer/EventTree");
 
-  chain->AddFile("root://cmsxrootd.fnal.gov//store/user/yumiceva/ntuples_2016/TTbar.root");
-  chain->Process("june.C++","output:histos_ttbar.root:endoutput PUinput:root://cmsxrootd.fnal.gov//store/user/yumiceva/ntuples_2016/TTbar.root:endPUinput");
+
+  chain->AddFile(input.c_str());
+  
+  string options = "output:"+output+":endoutput"+" PUinput:"+input+":endPUinput";
+  chain->Process("june.C+",options.c_str());
 
   //chain->AddFile("/uscms_data/d2/dnoonan/13TeV_TTGamma/TTGamma_SingleLeptFromTbar_100k.root");
   //chain->Process("june.C++","output:histos_ttbar_100k.root:endoutput PUinput:/uscms_data/d2/dnoonan/13TeV_TTGamma/TTGamma_SingleLeptFromTbar_100k.root:endPUinput");
@@ -34,6 +43,7 @@ void run_june() {
   //chain->Process("june.C++","output:histos_ttbar_100k.root:endoutput PUinput:/uscms_data/d2/dnoonan/13TeV_TTGamma/TTGamma_SingleLeptFromTbar_100k.root:endPUinput");
   //chain->Process("june.C++","output:histos_ST_s.root:endoutput");
 
+  // stop stopwatch
   t.Stop();
   t.Print();
 

@@ -155,7 +155,8 @@ Bool_t june::Process(Long64_t entry)
    if ( *isPVGood ) {
      counter["PV"]++;
      // if MC get PU weight
-     if (isMC) {
+     //if (isMC) {
+     if (!isMC) {
        //cout << "isMC " << isMC << endl;
        vector<int> my_puBX;
        for (int i = 0, n =  puBX.GetSize(); i < n; ++i)
@@ -176,7 +177,8 @@ Bool_t june::Process(Long64_t entry)
    else return kTRUE;
 
    // define selectors
-   MuonSelector mu_loose_selector( fReader.GetTree(), entry, "loose");
+   //MuonSelector mu_loose_selector( fReader.GetTree(), entry, "loose");
+   MuonSelector mu_loose_selector( fReader, "loose");
    MuonSelector mu_tight_selector( fReader.GetTree(), entry, "tight");
    ElectronSelector ele_veto_selector( fReader.GetTree(), entry, "loose");
    JetSelector jet_selector( fReader.GetTree(), entry, "tight", "CSVv2M");
